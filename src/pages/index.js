@@ -1,29 +1,65 @@
 import * as React from "react"
-import { Link } from "gatsby"
-import { StaticImage } from "gatsby-plugin-image"
+import { Link, graphql } from "gatsby"
 
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 
-const IndexPage = () => (
+const Home = ({ data }) => (
   <Layout>
     <SEO title="Home" />
     <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <StaticImage
-      src="../images/gatsby-astronaut.png"
-      width={300}
-      quality={95}
-      formats={["AUTO", "WEBP", "AVIF"]}
-      alt="A Gatsby astronaut"
-      style={{ marginBottom: `1.45rem` }}
-    />
-    <p>
-      <Link to="/page-2/">Go to page 2</Link> <br />
-      <Link to="/using-typescript/">Go to "Using TypeScript"</Link>
-    </p>
+    <h4>Posts</h4>
+    {data.allWpPost.nodes.map(node => (
+      <div key={node.slug}>
+        <Link to={`blog/${node.slug}`}>
+          <p>{node.title}</p>
+        </Link>
+        <div dangerouslySetInnerHTML={{ __html: node.excerpt }} />
+      </div>
+    ))}
+
+    <h4>Pages</h4>
+    {data.allWpPage.nodes.map(node => (
+      <div key={node.slug}>
+        <Link to={node.slug}>
+          <p>{node.title}</p>
+        </Link>
+      </div>
+    ))}
+
+    <h4>Secret Posts</h4>
+    {data.allWpSecretPost.nodes.map(node => (
+      <div key={node.slug}>
+        <Link to={`secret/${node.slug}`}>
+          <p>{node.title}</p>
+        </Link>
+      </div>
+    ))}
   </Layout>
 )
 
-export default IndexPage
+export default Home
+
+export const pageQuery = graphql`
+  query {
+    allWpPost(sort: { fields: [date] }) {
+      nodes {
+        title
+        excerpt
+        slug
+      }
+    }
+    allWpPage(sort: { fields: [date] }) {
+      nodes {
+        title
+        slug
+      }
+    }
+    allWpSecretPost(sort: { fields: [date] }) {
+      nodes {
+        title
+        slug
+      }
+    }
+  }
+`
