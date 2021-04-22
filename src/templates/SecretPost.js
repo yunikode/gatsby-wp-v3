@@ -1,7 +1,8 @@
 import React from "react"
-import { Link, graphql } from "gatsby"
+import { graphql } from "gatsby"
 import { GatsbyImage, getImage } from "gatsby-plugin-image"
-import parse from "html-react-parser"
+import parse, { attributesToProps, domToReact } from "html-react-parser"
+import Greeter from "../elements/greeter"
 
 // We're using Gutenberg so we need the block styles
 import "@wordpress/block-library/build-style/style.css"
@@ -12,6 +13,22 @@ import Layout from "../components/layout"
 import SEO from "../components/seo"
 
 const SecretPostTemplate = ({ data: { previous, next, post } }) => {
+  const featuredImage = {
+    image: post.featuredImage?.node?.localFile,
+  }
+
+  const parseOptions = {
+    replace: ({ attribs, children }) => {
+      if (!attribs) {
+        return
+      }
+      if (attribs.id === "customblock") {
+        const props = attributesToProps(attribs)
+        return <Greeter {...props}>{children}</Greeter>
+      }
+    },
+  }
+
   return (
     <Layout>
       <SEO title={post.title} description={post.excerpt} />
@@ -25,10 +42,16 @@ const SecretPostTemplate = ({ data: { previous, next, post } }) => {
           <h1 itemProp="headline">{parse(post.title)}</h1>
 
           <p>{post.date}</p>
+          {/* if we have a featured image for this post let's display it */}
+          {featuredImage && (
+            <GatsbyImage image={getImage(post.featuredImage.node.localFile)} />
+          )}
         </header>
 
         {!!post.content && (
-          <section itemProp="articleBody">{parse(post.content)}</section>
+          <section itemProp="articleBody">
+            {parse(post.content, parseOptions)}
+          </section>
         )}
 
         <hr />
